@@ -1,0 +1,20 @@
+services:
+  neo4j:
+    image: neo4j:latest
+    environment:
+      - NEO4J_AUTH=neo4j/password
+    ports:
+      - "7474:7474"
+      - "7687:7687"
+    restart: always
+
+    container_name: neo
+
+    volumes:
+      - ./data:/data
+      - ./logs:/logs
+      - ./config:/config
+      - ./plugins:/plugins
+
+# docker compose up -d
+# docker exec -it neo cypher-shell -u neo4j -p password
