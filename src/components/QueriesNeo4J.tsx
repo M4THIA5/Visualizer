@@ -1,11 +1,7 @@
 import React, { useState } from 'react';
 import { API_URL } from '../App';
 
-type Props = {
-  updateGraph: (newNode: { id: string; label: string }, newEdge?: { from: string; to: string }) => void;
-};
-
-const QueriesNeo4J: React.FC<Props> = ({ updateGraph }) => {
+const QueriesNeo4J = () => {
   const [name, setName] = useState("");
   const [person1, setPerson1] = useState("");
   const [person2, setPerson2] = useState("");
@@ -18,9 +14,8 @@ const QueriesNeo4J: React.FC<Props> = ({ updateGraph }) => {
     });
 
     if (response.ok) {
-      alert("Personne ajoutée !");
-      // Mise à jour du graphe après ajout
-      updateGraph({ id: name, label: name });
+      // relance la requête pour mettre à jour les données
+      window.location.reload();
     }
     setName("");
   };
@@ -35,8 +30,7 @@ const QueriesNeo4J: React.FC<Props> = ({ updateGraph }) => {
     if (response.ok) {
       alert("Relation ajoutée !");
       // Mise à jour du graphe après ajout de la relation
-      updateGraph({ id: person1, label: person1 });
-      updateGraph({ id: person2, label: person2 }, { from: person1, to: person2 });
+      window.location.reload();
     }
     setPerson1("");
     setPerson2("");

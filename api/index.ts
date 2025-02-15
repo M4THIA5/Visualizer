@@ -1,4 +1,6 @@
 import express from "express";
+import type { Request, Response } from "express";
+import type { Personne } from "./entities/Personnes"
 import cors from "cors";
 import neo4j from "neo4j-driver";
 
@@ -17,12 +19,33 @@ const driver = neo4j.driver(
     neo4j.auth.basic("neo4j", "password")
 );
 
-app.get("/", (req, res) => {
+app.get("/", (req: Request, res: Response) => {
     res.send("API Active");
 });
 
-// Récupérer toutes les personnes
-app.get("/persons", async (req, res) => {
+app.get("/nodes", async (req: Request, res: Response) => {
+    const session = driver.session();
+    try {
+      const result = await session.run("MATCH (n) RETURN n");
+  
+      // Transformer les résultats en un format JSON propre
+      const nodes = result.records.map((record) => {
+        const node = record.get("n");
+        return {
+          id: node.identity.low.toString(), // ID unique
+          labels: node.labels, // Labels du nœud (ex: Person)
+          properties: node.properties, // Propriétés (nom, âge, etc.)
+        };
+      });
+  
+      res.json(nodes);
+    } catch (error) {
+      console.error("Erreur lors de la récupération des nœuds :", error);
+      res.status(500).json({ error: "Erreur serveur" });
+    }
+  });
+
+app.get("/persons", async (req: Request, res: Response) => {
     const session = driver.session();
     try {
         const result = await session.run("MATCH (p:Person) RETURN p");
@@ -35,13 +58,18 @@ app.get("/persons", async (req, res) => {
 });
 
 // Ajouter une personne
-app.post("/add-person", async (req, res) => {
-    const { name } = req.body;
-    if (!name) return res.status(400).json({ error: "Nom requis" });
+app.post("/add-person", async (req: Request, res: Response) => {
+    const { prenom, nom, age, email, phone, adresse }: Personne = req.body;
+    if (!nom) {
+        res.status(400).json({ error: "Nom sont requis" });
+    }
 
     const session = driver.session();
     try {
-        await session.run("CREATE (p:Person {name: $name})", { name });
+        await session.run(
+            "CREATE (p:Person {prenom: $prenom, nom: $nom, age: $age, email: $email, phone: $phone, adresse: $adresse})",
+            { prenom, nom, age, email, phone, adresse }
+        );
         res.json({ message: "Personne ajoutée" });
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -50,10 +78,14 @@ app.post("/add-person", async (req, res) => {
     }
 });
 
+
+
+
+
 // Ajouter une relation
-app.post("/add-friendship", async (req, res) => {
+app.post("/add-friendship", async (req: Request, res: Response) => {
     const { person1, person2 } = req.body;
-    if (!person1 || !person2) return res.status(400).json({ error: "Deux noms requis" });
+    if (!person1 || !person2) res.status(400).json({ error: "Deux noms requis" });
 
     const session = driver.session();
     try {

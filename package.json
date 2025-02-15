@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "api:dev": "ts-node ./api/index.ts && nodemon ./api/index.ts",
+    "api:dev": "nodemon ./api/index.ts",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview"
@@ -21,6 +21,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.19.0",
+    "@types/express": "^5.0.0",
     "@types/react": "^19.0.8",
     "@types/react-dom": "^19.0.3",
     "@vitejs/plugin-react": "^4.3.4",

@@ -18,3 +18,19 @@ services:
 
 # docker compose up -d
 # docker exec -it neo cypher-shell -u neo4j -p password
+
+#----------------------------------------#
+    
+  # mongo:
+  #   image: mongo:latest
+  #   container_name: mongo_tp
+  #   environment:
+  #     MONGO_INITDB_ROOT_USERNAME: root
+  #     MONGO_INITDB_ROOT_PASSWORD: password
+  #     MONGO_INITDB_DATABASE: project
+  #   ports:
+  #     - "27017:27017"
+  #   volumes:
+  #     - ./mongodb/data:/data/db
+  #     - ./init-mongo.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+  #   restart: always
