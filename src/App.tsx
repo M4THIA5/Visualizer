@@ -1,30 +1,25 @@
-import React, { useEffect } from 'react';
-import './App.css';
-import DataVisualisation from './components/DataVisualisation';
-import QueriesNeo4J from './components/QueriesNeo4J';
+import { BrowserRouter as Router, Route, Routes, Link } from "react-router-dom";
+import GraphVisualizer from "./components/GraphVisualizer";
+import AddNodeForm from "./components/AddNodeForm";
 
 export const API_URL = "http://localhost:3000";
 
 function App() {
-  useEffect(() => {
-    const fetchPersons = async () => {
-      try {
-        const response = await fetch(`${API_URL}/nodes`);
-        const data = await response.json();
-        console.log(data);
-      } catch (error) {
-        console.error("Erreur lors de la récupération des personnes :", error);
-      }
-    };
-
-    fetchPersons();
-  }, []);
-
   return (
-    <>
-      <QueriesNeo4J />
-      <DataVisualisation />
-    </>
+    <Router>
+      <div className="App">
+        <h1>Visualisation Neo4j</h1>
+        <nav>
+          <Link to="/">Voir le graphique</Link>
+          <Link to="/add-node">Ajouter un nœud</Link>
+        </nav>
+
+        <Routes>
+          <Route path="/" element={<GraphVisualizer />} />
+          <Route path="/add-node" element={<AddNodeForm />} />
+        </Routes>
+      </div>
+    </Router>
   );
 }
 

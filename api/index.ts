@@ -1,6 +1,5 @@
 import express from "express";
 import type { Request, Response } from "express";
-import type { Personne } from "./entities/Personnes"
 import cors from "cors";
 import neo4j from "neo4j-driver";
 
@@ -45,31 +44,23 @@ app.get("/nodes", async (req: Request, res: Response) => {
     }
   });
 
-app.get("/persons", async (req: Request, res: Response) => {
+app.post("/add-node", async (req: Request, res: Response) => {
     const session = driver.session();
+    const body = req.body;
     try {
-        const result = await session.run("MATCH (p:Person) RETURN p");
-        res.json(result.records.map((record) => record.get("p").properties));
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    } finally {
-        await session.close();
-    }
-});
+        let entityName = body.entityName;
+        if (!entityName) res.status(400).json({ error: "Nom de l'entité requis" });
+        entityName = entityName.trim().replace(/s$/, "");
+        entityName = entityName.charAt(0).toUpperCase() + entityName.slice(1);
+        delete body.entityName;
 
-// Ajouter une personne
-app.post("/add-person", async (req: Request, res: Response) => {
-    const { prenom, nom, age, email, phone, adresse }: Personne = req.body;
-    if (!nom) {
-        res.status(400).json({ error: "Nom sont requis" });
-    }
+        const properties = Object.keys(body)
+            .map((key) => `p.${key} = $${key}`)
+            .join(", ");
 
-    const session = driver.session();
-    try {
-        await session.run(
-            "CREATE (p:Person {prenom: $prenom, nom: $nom, age: $age, email: $email, phone: $phone, adresse: $adresse})",
-            { prenom, nom, age, email, phone, adresse }
-        );
+        const query = `CREATE (p:${entityName}) SET ${properties}`;
+        
+        await session.run(query, body);
         res.json({ message: "Personne ajoutée" });
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -79,11 +70,7 @@ app.post("/add-person", async (req: Request, res: Response) => {
 });
 
 
-
-
-
-// Ajouter une relation
-app.post("/add-friendship", async (req: Request, res: Response) => {
+app.post("/add-relation", async (req: Request, res: Response) => {
     const { person1, person2 } = req.body;
     if (!person1 || !person2) res.status(400).json({ error: "Deux noms requis" });
 
