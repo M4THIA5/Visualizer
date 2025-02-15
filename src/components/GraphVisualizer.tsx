@@ -8,7 +8,7 @@ const GraphVisualizer = () => {
   const networkRef = useRef<HTMLDivElement>(null);
   
   const [nodes, setNodes] = useState<Node[]>([]);
-  const [edges] = useState<Edge[]>([]);
+  const [edges, setEdges] = useState<Edge[]>([]);
 
   const colorByEntity = (entity: string) => {
     switch (entity) {
@@ -26,31 +26,45 @@ const GraphVisualizer = () => {
   }
 
   useEffect(() => {
-    const fetchNodes = async () => {
+    const fetchGraphData = async () => {
       try {
-        const response = await axios.get(`${API_URL}/nodes`);
-        const data = response.data;
+        const [nodesResponse, edgesResponse] = await Promise.all([
+          axios.get(`${API_URL}/nodes`),
+          axios.get(`${API_URL}/edges`)
+        ]);
 
-        if (!Array.isArray(data)) {
-          console.error("Les données reçues ne sont pas un tableau.");
+        const nodesData = nodesResponse.data;
+        const edgesData = edgesResponse.data;
+
+        if (!Array.isArray(nodesData) || !Array.isArray(edgesData)) {
+          console.error("Les données reçues ne sont pas des tableaux.");
           return;
         }
 
-        const visNodes = data.map((node, index) => ({
+        const visNodes = nodesData.map((node, index) => ({
           id: node.id || index, // ID unique (utilise `id` s’il existe)
           label: `${node.labels[0]}\n${Object.values(node.properties).find(value => value) || 'Node'}`, // Premier texte dispo
-          title: Object.entries(node.properties).map(([key, value]) => `- ${key}: ${value}`).join("\n"), // Infos au survol
+          title: Object.entries(node.properties).map(([key, value]) => `- ${key}: ${value}`).join("\n") + `\nnodeId: ${node.id}`, // Infos au survol
           shape: "ellipse",
           color: colorByEntity(node.labels[0]),
         }));
 
+        const visEdges = edgesData.map((edge, index) => ({
+          id: edge.id || index,
+          from: edge.startNode,
+          to: edge.endNode,
+          label: edge.type,
+          arrows: "to",
+        }));
+
         setNodes(visNodes);
+        setEdges(visEdges);
       } catch (error) {
-        console.error("Erreur lors de la récupération des nœuds :", error);
+        console.error("Erreur lors de la récupération des données du graphe :", error);
       }
     };
 
-    fetchNodes();
+    fetchGraphData();
   }, []);
 
   useEffect(() => {
