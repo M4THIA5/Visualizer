@@ -3,13 +3,11 @@ import os
 import pathlib
 from os.path import basename
 
-from projet.files.main import get_database, fetch_data
-
-dir_path = pathlib.Path(pathlib.Path(__file__).parent.joinpath('files/used'))
-dbname = get_database()
-
+from python.main import get_database
 
 def pull_csv_to_mongo():
+    dir_path = pathlib.Path(pathlib.Path(__file__).parent.joinpath('files')) / "used"
+    dbname = get_database()
     for file in dir_path.iterdir():
         file = pathlib.Path(file)
         if file.glob('*.csv'):
@@ -24,11 +22,8 @@ def pull_csv_to_mongo():
                 print(f"Erreur lors du traitement du fichier {file.name}: {e}")
 
 
-pull_csv_to_mongo()
-print(dbname.list_collection_names())
-print(fetch_data("sites"))
-
-
-
+# pull_csv_to_mongo()
+# print(dbname.list_collection_names())
+# print(fetch_data("sites"))
 
 # ['sites_Metropole', 'sites_5G_historique_comptage', 'test', 'sites_Outremer', 'collection']

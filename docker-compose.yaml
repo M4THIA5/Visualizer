@@ -1,36 +1,37 @@
 services:
   neo4j:
-    image: neo4j:latest
+    image: neo4j:3.5
     environment:
       - NEO4J_AUTH=neo4j/password
+      - NEO4J_apoc_export_file_enabled='true'
+      - NEO4J_apoc_import_file_enabled='true'
+
     ports:
       - "7474:7474"
       - "7687:7687"
     restart: always
-
     container_name: neo
-
     volumes:
-      - ./data:/data
-      - ./logs:/logs
-      - ./config:/config
-      - ./plugins:/plugins
+      - ./neo4j/data:/data
+      - ./neo4j/logs:/logs
+      - ./neo4j/config:/config
+      - ./neo4j/plugins:/plugins
+  
+
+  mongo:
+    image: mongo:latest
+    container_name: mongo
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: password
+      MONGO_INITDB_DATABASE: project
+    ports:
+      - "27017:27017"
+    volumes:
+      - ./mongodb/data:/data/db
+      - ./init-mongo.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+    restart: always
 
 # docker compose up -d
 # docker exec -it neo cypher-shell -u neo4j -p password
-
-#----------------------------------------#
-    
-  # mongo:
-  #   image: mongo:latest
-  #   container_name: mongo_tp
-  #   environment:
-  #     MONGO_INITDB_ROOT_USERNAME: root
-  #     MONGO_INITDB_ROOT_PASSWORD: password
-  #     MONGO_INITDB_DATABASE: project
-  #   ports:
-  #     - "27017:27017"
-  #   volumes:
-  #     - ./mongodb/data:/data/db
-  #     - ./init-mongo.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
-  #   restart: always
+# docker exec -it mongo mongosh -u neo4j project

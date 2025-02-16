@@ -1,6 +1,11 @@
 from pymongo import MongoClient
 
 
+from python.affaireGenerator import generator_affaire
+from python.appelGenerator import generator_appel
+from python.siteGenerator import generator_site
+
+
 def get_database():
     # Provide the mongodb url to connect python to mongodb using pymongo
     CONNECTION_STRING = "mongodb://neo4j:neo4pass@localhost:27017/project"
@@ -26,4 +31,8 @@ def get_count(name_collection = "collection"):
 
 
 if __name__ == "__main__":
-    pass
+    from python.CSVtoMango import pull_csv_to_mongo
+    pull_csv_to_mongo()
+    generator_affaire()
+    generator_appel()
+    generator_site()
