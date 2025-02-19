@@ -125,4 +125,47 @@ app.get("/edges", async (req: Request, res: Response) => {
     }
 });
 
+app.post("/nodes/:label", async (req: Request, res: Response) => {
+    const session = driver.session();
+    const label = req.params.label;
+    const { filters } = req.body;
+
+    try {
+        let query = label.toLowerCase() === "all" ? "MATCH (n)" : `MATCH (n:${label})`;
+        const params: Record<string, unknown> = {};
+
+        // Ajouter les filtres si fournis
+        if (filters && filters.length > 0) {
+            query += " WHERE " + filters
+                .map((filter, index) => `n.${filter.key} = $param${index}`)
+                .join(" AND ");
+            
+            filters.forEach((filter, index) => {
+                params[`param${index}`] = filter.value;
+            });
+        }
+
+        query += " RETURN n, labels(n) AS labels";
+        console.log(query);
+        const result = await session.run(query, params);
+        const nodes = result.records.map(record => {
+            const node = record.get("n");
+            const labels = record.get("labels");
+            return {
+                id: node.identity.low,
+                label: labels.length > 0 ? labels[0] : "Unknown",
+                properties: node.properties,
+            };
+        });
+
+        res.json(nodes);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    } finally {
+        await session.close();
+    }
+});
+
+
+
 app.listen(PORT, () => console.log(`Serveur démarré sur http://localhost:${PORT}`));
